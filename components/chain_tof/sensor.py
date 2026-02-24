@@ -51,46 +51,7 @@ async def to_code(config):
     
     if CONF_MEASURE_TIME in config:
         cg.add(var.set_measure_time(config[CONF_MEASURE_TIME]))
-    
     cg.add(parent.register_sensor(var))
-SensorPublishAction = sensor_ns.class_("SensorPublishAction", automation.Action)
-
-# Filters
-Filter = sensor_ns.class_("Filter")
-QuantileFilter = sensor_ns.class_("QuantileFilter", Filter)
-MedianFilter = sensor_ns.class_("MedianFilter", Filter)
-SkipInitialFilter = sensor_ns.class_("SkipInitialFilter", Filter)
-MinFilter = sensor_ns.class_("MinFilter", Filter)
-MaxFilter = sensor_ns.class_("MaxFilter", Filter)
-SlidingWindowMovingAverageFilter = sensor_ns.class_(
-    "SlidingWindowMovingAverageFilter", Filter
-)
-StreamingMinFilter = sensor_ns.class_("StreamingMinFilter", Filter)
-StreamingMaxFilter = sensor_ns.class_("StreamingMaxFilter", Filter)
-StreamingMovingAverageFilter = sensor_ns.class_("StreamingMovingAverageFilter", Filter)
-ExponentialMovingAverageFilter = sensor_ns.class_(
-    "ExponentialMovingAverageFilter", Filter
-)
-ThrottleAverageFilter = sensor_ns.class_("ThrottleAverageFilter", Filter, cg.Component)
-LambdaFilter = sensor_ns.class_("LambdaFilter", Filter)
-StatelessLambdaFilter = sensor_ns.class_("StatelessLambdaFilter", Filter)
-OffsetFilter = sensor_ns.class_("OffsetFilter", Filter)
-MultiplyFilter = sensor_ns.class_("MultiplyFilter", Filter)
-ValueListFilter = sensor_ns.class_("ValueListFilter", Filter)
-FilterOutValueFilter = sensor_ns.class_("FilterOutValueFilter", ValueListFilter)
-ThrottleFilter = sensor_ns.class_("ThrottleFilter", Filter)
-ThrottleWithPriorityFilter = sensor_ns.class_(
-    "ThrottleWithPriorityFilter", ValueListFilter
-)
-TimeoutFilterBase = sensor_ns.class_("TimeoutFilterBase", Filter, cg.Component)
-TimeoutFilterLast = sensor_ns.class_("TimeoutFilterLast", TimeoutFilterBase)
-TimeoutFilterConfigured = sensor_ns.class_("TimeoutFilterConfigured", TimeoutFilterBase)
-DebounceFilter = sensor_ns.class_("DebounceFilter", Filter, cg.Component)
-HeartbeatFilter = sensor_ns.class_("HeartbeatFilter", Filter, cg.Component)
-DeltaFilter = sensor_ns.class_("DeltaFilter", Filter)
-OrFilter = sensor_ns.class_("OrFilter", Filter)
-CalibrateLinearFilter = sensor_ns.class_("CalibrateLinearFilter", Filter)
-ToNTCResistanceFilter = sensor_ns.class_("ToNTCResistanceFilter", Filter)
 ToNTCTemperatureFilter = sensor_ns.class_("ToNTCTemperatureFilter", Filter)
 CalibratePolynomialFilter = sensor_ns.class_("CalibratePolynomialFilter", Filter)
 SensorInRangeCondition = sensor_ns.class_("SensorInRangeCondition", Filter)
