@@ -46,7 +46,7 @@ void ChainToFComponent::loop() {
 void ChainToFComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "Chain ToF:");
   ESP_LOGCONFIG(TAG, "  Device ID: %d", this->device_id_);
-  this->check_uart_settings(9600, 1, uart::UART_CONFIG_PARITY_NONE, 8);
+  this->check_uart_settings(115200, 1, uart::UART_CONFIG_PARITY_NONE, 8);
 }
 
 bool ChainToFComponent::acquire_mutex_() {
