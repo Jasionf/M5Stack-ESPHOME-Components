@@ -6,7 +6,8 @@ from . import ChainEncoderSensor
 
 DEPENDENCIES = ["uart"]
 
-CONF_DEVICE_ID = "device_id"
+# 使用 chain_id 而不是 device_id，避免与 ESPHome 内部 device_id 字段冲突
+CONF_CHAIN_ID = "chain_id"
 
 
 CONFIG_SCHEMA = (
@@ -16,7 +17,7 @@ CONFIG_SCHEMA = (
     )
     .extend(
         {
-            cv.Optional(CONF_DEVICE_ID, default=1): cv.int_range(min=1, max=255),
+            cv.Optional(CONF_CHAIN_ID, default=1): cv.int_range(min=1, max=255),
         }
     )
     .extend(uart.UART_DEVICE_SCHEMA)
@@ -29,5 +30,5 @@ async def to_code(config):
     await cg.register_component(var, config)
     await uart.register_uart_device(var, config)
 
-    cg.add(var.set_device_id(config[CONF_DEVICE_ID]))
+    cg.add(var.set_device_id(config[CONF_CHAIN_ID]))
 
