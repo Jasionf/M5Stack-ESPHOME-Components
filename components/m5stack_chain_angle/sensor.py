@@ -12,7 +12,6 @@ CONF_DEVICE_ID = "device_id"
 
 CONFIG_SCHEMA = (
     sensor.sensor_schema(
-        unit_of_measurement=None,
         icon="mdi:rotate-3d-variant",
     )
     .extend(
