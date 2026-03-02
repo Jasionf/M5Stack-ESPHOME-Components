@@ -18,6 +18,7 @@ CONF_CHAIN_ENCODER_ID = "chain_encoder_id"
 
 CHANNEL_MAP = {
     "led_brightness": LedChannel.LED_BRIGHTNESS,
+    "rgb_brightness": LedChannel.RGB_BRIGHTNESS,
     "rgb_red": LedChannel.RGB_RED,
     "rgb_green": LedChannel.RGB_GREEN,
     "rgb_blue": LedChannel.RGB_BLUE,

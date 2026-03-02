@@ -236,6 +236,29 @@ light:
     green: chain_joystick_rgb_g
     blue: chain_joystick_rgb_b
 
+  # Chain Angle RGB 颜色通道
+  - platform: m5stack_chain_angle
+    id: chain_angle_rgb_r
+    chain_angle_id: chain_angle_1
+    channel: rgb_red
+
+  - platform: m5stack_chain_angle
+    id: chain_angle_rgb_g
+    chain_angle_id: chain_angle_1
+    channel: rgb_green
+
+  - platform: m5stack_chain_angle
+    id: chain_angle_rgb_b
+    chain_angle_id: chain_angle_1
+    channel: rgb_blue
+
+  # Angle 彩色灯
+  - platform: rgb
+    name: "Chain Angle RGB"
+    red: chain_angle_rgb_r
+    green: chain_angle_rgb_g
+    blue: chain_angle_rgb_b
+
 binary_sensor:
 
   - platform: gpio
