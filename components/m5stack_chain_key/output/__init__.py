@@ -6,7 +6,6 @@ from esphome.const import CONF_ID
 from .. import m5stack_chain_key_ns, ChainKeyBinarySensor
 
 CODEOWNERS = ["@Jasionf"]
-DEPENDENCIES = ["m5stack_chain_key"]
 
 ChainKeyLedOutput = m5stack_chain_key_ns.class_(
     "ChainKeyLedOutput",

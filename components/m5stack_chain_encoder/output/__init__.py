@@ -6,7 +6,6 @@ from esphome.const import CONF_ID
 from .. import m5stack_chain_encoder_ns, ChainEncoderSensor
 
 CODEOWNERS = ["@Jasionf"]
-DEPENDENCIES = ["m5stack_chain_encoder"]
 
 ChainEncoderLedOutput = m5stack_chain_encoder_ns.class_(
     "ChainEncoderLedOutput",

@@ -6,7 +6,6 @@ from esphome.const import CONF_ID
 from .. import m5stack_chain_angle_ns, ChainAngleSensor
 
 CODEOWNERS = ["@Jasionf"]
-DEPENDENCIES = ["m5stack_chain_angle"]
 
 ChainAngleLedOutput = m5stack_chain_angle_ns.class_(
     "ChainAngleLedOutput",

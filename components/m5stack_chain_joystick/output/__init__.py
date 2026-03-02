@@ -6,7 +6,6 @@ from esphome.const import CONF_ID
 from .. import m5stack_chain_joystick_ns, ChainJoystickSensor
 
 CODEOWNERS = ["@Jasionf"]
-DEPENDENCIES = ["m5stack_chain_joystick"]
 
 ChainJoystickLedOutput = m5stack_chain_joystick_ns.class_(
     "ChainJoystickLedOutput",
