@@ -102,30 +102,7 @@ output:
     id: pwr_en
     pin: GPIO40
 
-  - platform: m5stack_chain_key
-    id: chain_key_led_output
-    chain_key_id: chain_key_1
-    channel: led_brightness
-
-  - platform: m5stack_chain_joystick
-    id: chain_joystick_led_output
-    chain_joystick_id: chain_joystick_x
-    channel: led_brightness
-
-  - platform: m5stack_chain_encoder
-    id: chain_encoder_led_output
-    chain_encoder_id: chain_encoder_1
-    channel: led_brightness
-
-  - platform: m5stack_chain_angle
-    id: chain_angle_led_output
-    chain_angle_id: chain_angle_1 
-    channel: led_brightness
-
-  # 下面是示例：如果你想调颜色，可以为某个模块再增加三个 RGB 通道输出，
-  # 然后用 light: platform: rgb 组合成一个彩色灯。
-  # 这里先给出 Encoder 的示例，其他模块写法相同（把平台名和 *_id 换掉即可）。
-
+  # Encoder RGB 颜色通道
   - platform: m5stack_chain_encoder
     id: chain_encoder_rgb_r
     chain_encoder_id: chain_encoder_1
@@ -141,7 +118,6 @@ output:
     chain_encoder_id: chain_encoder_1
     channel: rgb_blue
 
-  # Chain Key RGB 颜色通道
   - platform: m5stack_chain_key
     id: chain_key_rgb_r
     chain_key_id: chain_key_1
@@ -157,7 +133,6 @@ output:
     chain_key_id: chain_key_1
     channel: rgb_blue
 
-  # Chain Joystick RGB 颜色通道
   - platform: m5stack_chain_joystick
     id: chain_joystick_rgb_r
     chain_joystick_id: chain_joystick_x
@@ -171,6 +146,22 @@ output:
   - platform: m5stack_chain_joystick
     id: chain_joystick_rgb_b
     chain_joystick_id: chain_joystick_x
+    channel: rgb_blue
+
+  # Chain Angle RGB 颜色通道
+  - platform: m5stack_chain_angle
+    id: chain_angle_rgb_r
+    chain_angle_id: chain_angle_1
+    channel: rgb_red
+
+  - platform: m5stack_chain_angle
+    id: chain_angle_rgb_g
+    chain_angle_id: chain_angle_1
+    channel: rgb_green
+
+  - platform: m5stack_chain_angle
+    id: chain_angle_rgb_b
+    chain_angle_id: chain_angle_1
     channel: rgb_blue
 
 light:
@@ -199,23 +190,7 @@ light:
         from: 1
         to: 1
 
-  - platform: monochromatic
-    name: "Chain Key LED"
-    output: chain_key_led_output
-
-  - platform: monochromatic
-    name: "Chain Joystick LED"
-    output: chain_joystick_led_output
-
-  - platform: monochromatic
-    name: "Chain Encoder LED"
-    output: chain_encoder_led_output
-
-  - platform: monochromatic
-    name: "Chain Angle LED"
-    output: chain_angle_led_output
-
-  # Encoder 彩色灯示例（可选）
+  # Encoder RGB 灯
   - platform: rgb
     name: "Chain Encoder RGB"
     red: chain_encoder_rgb_r
@@ -235,22 +210,6 @@ light:
     red: chain_joystick_rgb_r
     green: chain_joystick_rgb_g
     blue: chain_joystick_rgb_b
-
-  # Chain Angle RGB 颜色通道
-  - platform: m5stack_chain_angle
-    id: chain_angle_rgb_r
-    chain_angle_id: chain_angle_1
-    channel: rgb_red
-
-  - platform: m5stack_chain_angle
-    id: chain_angle_rgb_g
-    chain_angle_id: chain_angle_1
-    channel: rgb_green
-
-  - platform: m5stack_chain_angle
-    id: chain_angle_rgb_b
-    chain_angle_id: chain_angle_1
-    channel: rgb_blue
 
   # Angle 彩色灯
   - platform: rgb
