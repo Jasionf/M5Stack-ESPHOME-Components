@@ -55,6 +55,7 @@ sensor:
     update_interval: 100ms
 
   - platform: m5stack_chain_tof
+    id: chain_tof_1
     name: "Chain Tof"
     uart_id: chain_uart_right   
     chain_id: 3                
@@ -164,6 +165,22 @@ output:
     chain_angle_id: chain_angle_1
     channel: rgb_blue
 
+  # ToF RGB 颜色通道
+  - platform: m5stack_chain_tof
+    id: chain_tof_rgb_r
+    m5stack_chain_tof_id: chain_tof_1
+    channel: rgb_red
+
+  - platform: m5stack_chain_tof
+    id: chain_tof_rgb_g
+    m5stack_chain_tof_id: chain_tof_1
+    channel: rgb_green
+
+  - platform: m5stack_chain_tof
+    id: chain_tof_rgb_b
+    m5stack_chain_tof_id: chain_tof_1
+    channel: rgb_blue
+
 light:
   - platform: esp32_rmt_led_strip
     id: key_light_raw
@@ -217,6 +234,13 @@ light:
     red: chain_angle_rgb_r
     green: chain_angle_rgb_g
     blue: chain_angle_rgb_b
+
+  # ToF 彩色灯
+  - platform: rgb
+    name: "Chain Tof RGB"
+    red: chain_tof_rgb_r
+    green: chain_tof_rgb_g
+    blue: chain_tof_rgb_b
 
 binary_sensor:
 
