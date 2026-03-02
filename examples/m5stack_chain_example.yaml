@@ -263,6 +263,16 @@ binary_sensor:
     chain_id: 2        
     update_interval: 50ms
 
+  # Encoder onboard button (polled via encoder sensor)
+  - platform: m5stack_chain_encoder
+    name: "Chain Encoder Button"
+    chain_encoder_id: chain_encoder_1
+
+  # Joystick onboard button (polled via joystick sensor on X axis instance)
+  - platform: m5stack_chain_joystick
+    name: "Chain Joystick Button"
+    chain_joystick_id: chain_joystick_x
+
   - platform: gpio
     name: "SWITCH 1"
     pin:

@@ -3,6 +3,7 @@
 #include "esphome/core/component.h"
 #include "esphome/components/uart/uart.h"
 #include "esphome/components/sensor/sensor.h"
+#include "esphome/components/binary_sensor/binary_sensor.h"
 
 namespace esphome {
 namespace m5stack_chain_encoder {
@@ -18,6 +19,9 @@ enum ChainStatus : uint8_t {
 enum EncoderCommand : uint8_t {
   CHAIN_ENCODER_GET_VALUE = 0x10,
 };
+
+// Button command (shared with other Chain button devices)
+static const uint8_t CHAIN_BUTTON_GET_STATUS = 0xE1;
 
 // Common RGB LED commands (shared by all Chain devices)
 static const uint8_t CHAIN_SET_RGB_VALUE = 0x20;
@@ -44,6 +48,8 @@ class ChainEncoderSensor : public sensor::Sensor,
  public:
   void set_device_id(uint8_t id) { this->device_id_ = id; }
 
+  void set_button_sensor(binary_sensor::BinarySensor *button) { this->button_sensor_ = button; }
+
     // Set onboard LED brightness (0-100)
     ChainStatus set_led_brightness(uint8_t brightness, uint8_t *operation_status = nullptr);
 
@@ -57,6 +63,7 @@ class ChainEncoderSensor : public sensor::Sensor,
 
  protected:
   ChainStatus get_encoder_value_(uint8_t id, int16_t *value, uint32_t timeout_ms = 100);
+  ChainStatus get_button_status_(uint8_t id, uint8_t *status, uint32_t timeout_ms = 100);
   bool acquire_mutex_();
   void release_mutex_();
 
@@ -70,6 +77,8 @@ class ChainEncoderSensor : public sensor::Sensor,
   uint8_t calculate_crc_(const uint8_t *buffer, uint16_t size) const;
 
   uint8_t device_id_{1};
+
+  binary_sensor::BinarySensor *button_sensor_{nullptr};
 
   bool mutex_locked_{false};
 
