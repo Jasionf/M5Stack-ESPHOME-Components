@@ -19,7 +19,9 @@ enum KeyCommand : uint8_t {
   CHAIN_BUTTON_GET_STATUS = 0xE1,
 };
 
-// Common RGB LED command (shared by all Chain devices)
+// Common RGB LED commands (shared by all Chain devices)
+static const uint8_t CHAIN_SET_RGB_VALUE = 0x20;
+static const uint8_t CHAIN_GET_RGB_VALUE = 0x21;
 static const uint8_t CHAIN_SET_RGB_LIGHT = 0x22;
 
 static const uint8_t PACK_HEAD_HIGH = 0xAA;
@@ -43,6 +45,11 @@ class ChainKeyBinarySensor : public binary_sensor::BinarySensor,
 
     // Set onboard LED brightness (0-100)
     ChainStatus set_led_brightness(uint8_t brightness, uint8_t *operation_status = nullptr);
+
+  // Set onboard RGB color
+  ChainStatus set_rgb_color(uint8_t r, uint8_t g, uint8_t b, uint8_t *operation_status = nullptr);
+  // Get onboard RGB color
+  ChainStatus get_rgb_color(uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *operation_status = nullptr);
 
   void setup() override;
   void update() override;
