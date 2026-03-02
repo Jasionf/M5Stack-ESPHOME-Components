@@ -16,14 +16,11 @@ void ChainAngleSensor::update() {
   ChainStatus status = this->get_angle_12bit_adc_(this->device_id_, &adc_value, 100);
 
   if (status == CHAIN_OK) {
-    // 暂时直接上报原始 ADC 值 (0-4095)，用户可在 HA 侧做换算
     this->publish_state(adc_value);
   } else {
     ESP_LOGW(TAG, "Failed to read angle ADC (status=0x%02X)", static_cast<uint8_t>(status));
   }
 }
-
-// ==== Angle API 实现 ====
 
 ChainStatus ChainAngleSensor::get_angle_12bit_adc_(uint8_t id, uint16_t *adc_value, uint32_t timeout_ms) {
   if (adc_value == nullptr) {
@@ -33,13 +30,12 @@ ChainStatus ChainAngleSensor::get_angle_12bit_adc_(uint8_t id, uint16_t *adc_val
   ChainStatus status = CHAIN_OK;
 
   if (this->acquire_mutex_()) {
-    this->cmd_buffer_size_ = 0;  // Angle 的 GET_12ADC 不需要额外 payload
+    this->cmd_buffer_size_ = 0;
 
     this->send_packet_(id, CHAIN_ANGLE_GET_12ADC, this->cmd_buffer_, this->cmd_buffer_size_);
 
     if (this->wait_for_data_(id, CHAIN_ANGLE_GET_12ADC, timeout_ms)) {
       if (this->check_packet_(this->return_packet_, this->return_packet_size_)) {
-        // 与原库保持一致: *adcValue = (returnPacket[7] << 8) | returnPacket[6];
         *adc_value = (static_cast<uint16_t>(this->return_packet_[7]) << 8) | this->return_packet_[6];
       } else {
         status = CHAIN_RETURN_PACKET_ERROR;
@@ -56,7 +52,39 @@ ChainStatus ChainAngleSensor::get_angle_12bit_adc_(uint8_t id, uint16_t *adc_val
   return status;
 }
 
-// ==== 协议内部实现 ====
+ChainStatus ChainAngleSensor::set_led_brightness(uint8_t brightness, uint8_t *operation_status) {
+  if (brightness > 100) {
+    return CHAIN_PARAMETER_ERROR;
+  }
+
+  ChainStatus status = CHAIN_OK;
+
+  if (this->acquire_mutex_()) {
+    this->cmd_buffer_size_ = 0;
+    this->cmd_buffer_[this->cmd_buffer_size_++] = brightness;
+    this->cmd_buffer_[this->cmd_buffer_size_++] = 0x00;  // do not save to flash
+
+    this->send_packet_(this->device_id_, CHAIN_SET_RGB_LIGHT, this->cmd_buffer_, this->cmd_buffer_size_);
+
+    if (this->wait_for_data_(this->device_id_, CHAIN_SET_RGB_LIGHT, 100)) {
+      if (this->check_packet_(this->return_packet_, this->return_packet_size_)) {
+        if (operation_status != nullptr) {
+          *operation_status = this->return_packet_[6];
+        }
+      } else {
+        status = CHAIN_RETURN_PACKET_ERROR;
+      }
+    } else {
+      status = CHAIN_TIMEOUT;
+    }
+
+    this->release_mutex_();
+  } else {
+    status = CHAIN_BUSY;
+  }
+
+  return status;
+}
 
 bool ChainAngleSensor::acquire_mutex_() {
   uint32_t start = millis();

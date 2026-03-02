@@ -7,9 +7,6 @@
 namespace esphome {
 namespace m5stack_chain_angle {
 
-// 基于 M5Chain 协议的精简实现，只保留 Angle 所需功能
-
-// 状态码，与原 ChainCommon 保持一致
 enum ChainStatus : uint8_t {
   CHAIN_OK = 0x00,
   CHAIN_PARAMETER_ERROR = 0x01,
@@ -18,7 +15,6 @@ enum ChainStatus : uint8_t {
   CHAIN_TIMEOUT = 0x05,
 };
 
-// Angle 专用指令
 enum AngleCommand : uint8_t {
   CHAIN_ANGLE_GET_12ADC = 0x30,
   CHAIN_ANGLE_GET_8ADC = 0x31,
@@ -26,7 +22,9 @@ enum AngleCommand : uint8_t {
   CHAIN_ANGLE_GET_CLOCKWISE_STATUS = 0x33,
 };
 
-// 协议常量（与 M5Chain 保持一致）
+// Common RGB LED command (shared by all Chain devices)
+static const uint8_t CHAIN_SET_RGB_LIGHT = 0x22;
+
 static const uint8_t PACK_HEAD_HIGH = 0xAA;
 static const uint8_t PACK_HEAD_LOW = 0x55;
 static const uint8_t PACK_END_HIGH = 0x55;
@@ -38,7 +36,7 @@ static const uint16_t RECEIVE_BUFFER_SIZE = 1024;
 static const uint16_t SEND_BUFFER_SIZE = 256;
 static const uint16_t CMD_BUFFER_SIZE = 256;
 
-static const uint32_t TIMEOUT_MS = 1;  // 单次 readBuffer 的内部轮询窗口
+static const uint32_t TIMEOUT_MS = 1;
 
 class ChainAngleSensor : public sensor::Sensor,
                          public PollingComponent,
@@ -46,14 +44,14 @@ class ChainAngleSensor : public sensor::Sensor,
  public:
   void set_device_id(uint8_t id) { this->device_id_ = id; }
 
+    // Set onboard LED brightness (0-100)
+    ChainStatus set_led_brightness(uint8_t brightness, uint8_t *operation_status = nullptr);
+
   void setup() override;
   void update() override;
 
  protected:
-  // ==== Angle 高层 API ====
   ChainStatus get_angle_12bit_adc_(uint8_t id, uint16_t *adc_value, uint32_t timeout_ms = 100);
-
-  // ==== 协议实现（精简自 ChainCommon）====
   bool acquire_mutex_();
   void release_mutex_();
 

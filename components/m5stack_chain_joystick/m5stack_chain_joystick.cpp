@@ -57,6 +57,40 @@ ChainStatus ChainJoystickSensor::get_mapped_int16_value_(uint8_t id, int16_t *x_
   return status;
 }
 
+ChainStatus ChainJoystickSensor::set_led_brightness(uint8_t brightness, uint8_t *operation_status) {
+  if (brightness > 100) {
+    return CHAIN_PARAMETER_ERROR;
+  }
+
+  ChainStatus status = CHAIN_OK;
+
+  if (this->acquire_mutex_()) {
+    this->cmd_buffer_size_ = 0;
+    this->cmd_buffer_[this->cmd_buffer_size_++] = brightness;
+    this->cmd_buffer_[this->cmd_buffer_size_++] = 0x00;  // do not save to flash
+
+    this->send_packet_(this->device_id_, CHAIN_SET_RGB_LIGHT, this->cmd_buffer_, this->cmd_buffer_size_);
+
+    if (this->wait_for_data_(this->device_id_, CHAIN_SET_RGB_LIGHT, 100)) {
+      if (this->check_packet_(this->return_packet_, this->return_packet_size_)) {
+        if (operation_status != nullptr) {
+          *operation_status = this->return_packet_[6];
+        }
+      } else {
+        status = CHAIN_RETURN_PACKET_ERROR;
+      }
+    } else {
+      status = CHAIN_TIMEOUT;
+    }
+
+    this->release_mutex_();
+  } else {
+    status = CHAIN_BUSY;
+  }
+
+  return status;
+}
+
 bool ChainJoystickSensor::acquire_mutex_() {
   uint32_t start = millis();
   while (true) {

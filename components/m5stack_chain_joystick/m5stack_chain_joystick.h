@@ -19,6 +19,9 @@ enum JoystickCommand : uint8_t {
   CHAIN_JOYSTICK_GET_ADC_XY_MAPPED_INT16_VALUE = 0x34,
 };
 
+// Common RGB LED command (shared by all Chain devices)
+static const uint8_t CHAIN_SET_RGB_LIGHT = 0x22;
+
 static const uint8_t PACK_HEAD_HIGH = 0xAA;
 static const uint8_t PACK_HEAD_LOW = 0x55;
 static const uint8_t PACK_END_HIGH = 0x55;
@@ -39,6 +42,9 @@ class ChainJoystickSensor : public sensor::Sensor,
   void set_device_id(uint8_t id) { this->device_id_ = id; }
   void set_axis(uint8_t axis) { this->axis_ = axis; }
 
+  // Set onboard LED brightness (0-100)
+  ChainStatus set_led_brightness(uint8_t brightness, uint8_t *operation_status = nullptr);
+
   void setup() override;
   void update() override;
 
@@ -58,7 +64,7 @@ class ChainJoystickSensor : public sensor::Sensor,
   uint8_t calculate_crc_(const uint8_t *buffer, uint16_t size) const;
 
   uint8_t device_id_{1};
-  uint8_t axis_{0};  // 0 = X, 1 = Y
+  uint8_t axis_{0};
 
   bool mutex_locked_{false};
 

@@ -7,9 +7,6 @@
 namespace esphome {
 namespace m5stack_chain_encoder {
 
-// 仅保留编码器当前值读取所需的协议子集
-
-// 状态码（与 ChainCommon 保持一致）
 enum ChainStatus : uint8_t {
   CHAIN_OK = 0x00,
   CHAIN_PARAMETER_ERROR = 0x01,
@@ -18,10 +15,12 @@ enum ChainStatus : uint8_t {
   CHAIN_TIMEOUT = 0x05,
 };
 
-// Encoder 指令
 enum EncoderCommand : uint8_t {
   CHAIN_ENCODER_GET_VALUE = 0x10,
 };
+
+// Common RGB LED command (shared by all Chain devices)
+static const uint8_t CHAIN_SET_RGB_LIGHT = 0x22;
 
 // 协议常量
 static const uint8_t PACK_HEAD_HIGH = 0xAA;
@@ -35,7 +34,7 @@ static const uint16_t RECEIVE_BUFFER_SIZE = 1024;
 static const uint16_t SEND_BUFFER_SIZE = 256;
 static const uint16_t CMD_BUFFER_SIZE = 256;
 
-static const uint32_t TIMEOUT_MS = 1;  // readBuffer 内部轮询窗口
+static const uint32_t TIMEOUT_MS = 1;
 
 class ChainEncoderSensor : public sensor::Sensor,
                            public PollingComponent,
@@ -43,14 +42,14 @@ class ChainEncoderSensor : public sensor::Sensor,
  public:
   void set_device_id(uint8_t id) { this->device_id_ = id; }
 
+    // Set onboard LED brightness (0-100)
+    ChainStatus set_led_brightness(uint8_t brightness, uint8_t *operation_status = nullptr);
+
   void setup() override;
   void update() override;
 
  protected:
-  // 高层 API：读取编码器当前值
   ChainStatus get_encoder_value_(uint8_t id, int16_t *value, uint32_t timeout_ms = 100);
-
-  // 协议实现（精简版）
   bool acquire_mutex_();
   void release_mutex_();
 
