@@ -38,4 +38,5 @@ async def to_code(config):
 
     parent = await cg.get_variable(config[CONF_CHAIN_ANGLE_ID])
     cg.add(var.set_parent(parent))
+    cg.add(var.set_channel(config[CONF_CHANNEL]))
     cg.add(var.set_channel(CHANNEL_MAP[config[CONF_CHANNEL]]))

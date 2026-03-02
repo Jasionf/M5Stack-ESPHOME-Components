@@ -141,6 +141,38 @@ output:
     chain_encoder_id: chain_encoder_1
     channel: rgb_blue
 
+  # Chain Key RGB 颜色通道
+  - platform: m5stack_chain_key
+    id: chain_key_rgb_r
+    chain_key_id: chain_key_1
+    channel: rgb_red
+
+  - platform: m5stack_chain_key
+    id: chain_key_rgb_g
+    chain_key_id: chain_key_1
+    channel: rgb_green
+
+  - platform: m5stack_chain_key
+    id: chain_key_rgb_b
+    chain_key_id: chain_key_1
+    channel: rgb_blue
+
+  # Chain Joystick RGB 颜色通道
+  - platform: m5stack_chain_joystick
+    id: chain_joystick_rgb_r
+    chain_joystick_id: chain_joystick_x
+    channel: rgb_red
+
+  - platform: m5stack_chain_joystick
+    id: chain_joystick_rgb_g
+    chain_joystick_id: chain_joystick_x
+    channel: rgb_green
+
+  - platform: m5stack_chain_joystick
+    id: chain_joystick_rgb_b
+    chain_joystick_id: chain_joystick_x
+    channel: rgb_blue
+
 light:
   - platform: esp32_rmt_led_strip
     id: key_light_raw
@@ -189,6 +221,20 @@ light:
     red: chain_encoder_rgb_r
     green: chain_encoder_rgb_g
     blue: chain_encoder_rgb_b
+
+  # Key 彩色灯
+  - platform: rgb
+    name: "Chain Key RGB"
+    red: chain_key_rgb_r
+    green: chain_key_rgb_g
+    blue: chain_key_rgb_b
+
+  # Joystick 彩色灯
+  - platform: rgb
+    name: "Chain Joystick RGB"
+    red: chain_joystick_rgb_r
+    green: chain_joystick_rgb_g
+    blue: chain_joystick_rgb_b
 
 binary_sensor:
 
