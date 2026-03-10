@@ -29,9 +29,10 @@ wifi:
     password: "JahANnrx22J3"
 
 external_components:
-  - source: github://Jasionf/echo-pyramid-components
+  - source:
+      type: local
+      path: ../components
     components: [m5station_axp192]
-    refresh: 0s
 
 i2c:
   - id: i2c_bus
