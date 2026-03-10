@@ -49,35 +49,35 @@ uart:
 sensor:
   - platform: m5stack_chain_encoder
     id: chain_encoder_1
-    name: "Chain Encoder"
+    name: "Encoder"
     uart_id: chain_uart_right   
     chain_id: 1                
     update_interval: 100ms
 
   - platform: m5stack_chain_tof
     id: chain_tof_1
-    name: "Chain Tof"
+    name: "ToF Distance"
     uart_id: chain_uart_right   
     chain_id: 3                
     update_interval: 100ms
 
   - platform: m5stack_chain_angle
     id: chain_angle_1
-    name: "Chain Angle Left"
+    name: "Angle"
     uart_id: chain_uart_right
     chain_id: 2
     update_interval: 100ms
     
   - platform: m5stack_chain_joystick
     id: chain_joystick_x
-    name: "Chain Joystick Left X"
+    name: "Joystick X"
     uart_id: chain_uart_left
     chain_id: 1
     axis: x
     update_interval: 100ms
 
   - platform: m5stack_chain_joystick
-    name: "Chain Joystick Left Y"
+    name: "Joystick Y"
     uart_id: chain_uart_left
     chain_id: 1
     axis: y
@@ -102,8 +102,6 @@ output:
   - platform: gpio
     id: pwr_en
     pin: GPIO40
-
-  # Encoder RGB 颜色通道
   - platform: m5stack_chain_encoder
     id: chain_encoder_rgb_r
     chain_encoder_id: chain_encoder_1
@@ -148,8 +146,6 @@ output:
     id: chain_joystick_rgb_b
     chain_joystick_id: chain_joystick_x
     channel: rgb_blue
-
-  # Chain Angle RGB 颜色通道
   - platform: m5stack_chain_angle
     id: chain_angle_rgb_r
     chain_angle_id: chain_angle_1
@@ -164,8 +160,6 @@ output:
     id: chain_angle_rgb_b
     chain_angle_id: chain_angle_1
     channel: rgb_blue
-
-  # ToF RGB 颜色通道
   - platform: m5stack_chain_tof
     id: chain_tof_rgb_r
     m5stack_chain_tof_id: chain_tof_1
@@ -192,52 +186,47 @@ light:
     restore_mode: ALWAYS_OFF
 
   - platform: partition
-    name: "Key Light 1"
+    name: "Key1 LED"
     id: key_light_1
-    segments:
-      - id: key_light_raw
-        from: 0
-        to: 0
-
-  - platform: partition
-    name: "Key Light 2"
-    id: key_light_2
     segments:
       - id: key_light_raw
         from: 1
         to: 1
 
-  # Encoder RGB 灯
+  - platform: partition
+    name: "Key2 LED"
+    id: key_light_2
+    segments:
+      - id: key_light_raw
+        from: 0
+        to: 0
+
   - platform: rgb
-    name: "Chain Encoder RGB"
+    name: "Encoder RGB"
     red: chain_encoder_rgb_r
     green: chain_encoder_rgb_g
     blue: chain_encoder_rgb_b
 
-  # Key 彩色灯
   - platform: rgb
-    name: "Chain Key RGB"
+    name: "Key RGB"
     red: chain_key_rgb_r
     green: chain_key_rgb_g
     blue: chain_key_rgb_b
 
-  # Joystick 彩色灯
   - platform: rgb
-    name: "Chain Joystick RGB"
+    name: "Joystick RGB"
     red: chain_joystick_rgb_r
     green: chain_joystick_rgb_g
     blue: chain_joystick_rgb_b
 
-  # Angle 彩色灯
   - platform: rgb
-    name: "Chain Angle RGB"
+    name: "Angle RGB"
     red: chain_angle_rgb_r
     green: chain_angle_rgb_g
     blue: chain_angle_rgb_b
 
-  # ToF 彩色灯
   - platform: rgb
-    name: "Chain Tof RGB"
+    name: "ToF RGB"
     red: chain_tof_rgb_r
     green: chain_tof_rgb_g
     blue: chain_tof_rgb_b
@@ -282,19 +271,17 @@ binary_sensor:
 
   - platform: m5stack_chain_key
     id: chain_key_1
-    name: "Chain Key Right 1"
+    name: "Key Module Button"
     uart_id: chain_uart_left
     chain_id: 2        
     update_interval: 50ms
 
-  # Encoder onboard button (polled via encoder sensor)
   - platform: m5stack_chain_encoder
-    name: "Chain Encoder Button"
+    name: "Encoder Button"
     chain_encoder_id: chain_encoder_1
 
-  # Joystick onboard button (polled via joystick sensor on X axis instance)
   - platform: m5stack_chain_joystick
-    name: "Chain Joystick Button"
+    name: "Joystick Button"
     chain_joystick_id: chain_joystick_x
 
   - platform: gpio
