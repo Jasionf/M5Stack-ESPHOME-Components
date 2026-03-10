@@ -126,16 +126,18 @@ void M5StationAXP192Component::begin() {
   // Disable DCDC2, enable EXTEN, LDO2, LDO3, DCDC1
   this->write_1_byte(0x12, this->read_8_bit(0x12) | 0x4D);
 
-  // Set LDO3 TFT_LED 2.8V
-  // Implemented via helper: voltage in mV, 2500-3300
-  // LDO3 is controlled by lower 4 bits of reg 0x28
+  // Set LDO2 & LDO3 voltages in register 0x28
+  // LDO2 (high 4 bits): LCD logic power - 3.0V
+  // LDO3 (low 4 bits): LCD backlight - 2.8V
   {
-    uint16_t mv = 2800;
-    uint8_t value = (mv > 3300) ? 15 : (mv / 100) - 18;
-    this->write_1_byte(0x28, (this->read_8_bit(0x28) & 0xF0) | (value & 0x0F));
+    uint16_t ldo2_mv = 3000;
+    uint16_t ldo3_mv = 2800;
+    uint8_t ldo2_value = (ldo2_mv > 3300) ? 15 : (ldo2_mv / 100) - 18;
+    uint8_t ldo3_value = (ldo3_mv > 3300) ? 15 : (ldo3_mv / 100) - 18;
+    this->write_1_byte(0x28, ((ldo2_value & 0x0F) << 4) | (ldo3_value & 0x0F));
   }
 
-  ESP_LOGD(TAG, "axp: lcd backlight voltage set to 2.80V");
+  ESP_LOGD(TAG, "axp: LDO2 (LCD logic) set to 3.00V, LDO3 (backlight) set to 2.80V");
 
   // Set ESP32 power voltage (DCDC1) to 3.35V
   {
@@ -203,6 +205,7 @@ void M5StationAXP192Component::screen_breath(int brightness_percent) {
     vol_mv = 3300;
 
   uint8_t value = (vol_mv > 3300) ? 15 : (vol_mv / 100) - 18;
+  // Preserve LDO2 (high 4 bits) while updating LDO3 (low 4 bits)
   this->write_1_byte(0x28, (this->read_8_bit(0x28) & 0xF0) | (value & 0x0F));
 }
 
