@@ -94,21 +94,19 @@ binary_sensor:
       number: GPIO39  # Fix: assign the correct GPIO pin
       inverted: true
 
-  # Use Button1 to control LCD backlight via AXP192 LDO3
+switch:
+  # Logical switch to control LCD backlight via AXP192 LDO3
   - platform: template
     name: "LCD Backlight"
     id: lcd_backlight
-    lambda: |-
-      // Return current assumed state (not tracked, default to ON)
-      return true;
-    on_press:
-      then:
-        - lambda: |-
-            id(pmu).set_backlight(true);
-    on_release:
-      then:
-        - lambda: |-
-            id(pmu).set_backlight(false);
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - lambda: |-
+          id(pmu).set_backlight(true);
+    turn_off_action:
+      - lambda: |-
+          id(pmu).set_backlight(false);
 
     
 # Example minimal configuration entry
@@ -123,8 +121,11 @@ display:
     dc_pin: GPIO19
     reset_pin: GPIO15
     rotation: 90
+    update_interval: 1s
     lambda: |-
-      it.print(0, 0, id(font20), "Hello World!");
+      // Fill screen with white so backlight效果明显
+      it.fill(Color::WHITE);
+      it.print(0, 0, id(font20), Color::BLACK, "Hello World!");
 
 
 font:

@@ -17,6 +17,15 @@ void M5StationAXP192Component::setup() {
   ESP_LOGD(TAG, "AXP192 chip ID: 0x%02X", chip_id);
 
   this->begin();
+  
+  // Force backlight to maximum brightness (100%) to ensure visibility
+  this->screen_breath(100);
+  ESP_LOGD(TAG, "Set backlight to 100%% brightness");
+  
+  // Force backlight ON immediately after initialization
+  // This ensures LDO3 is enabled regardless of switch restore state
+  this->set_backlight(true);
+  ESP_LOGD(TAG, "Forced backlight ON after setup");
 }
 
 void M5StationAXP192Component::dump_config() {
