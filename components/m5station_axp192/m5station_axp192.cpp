@@ -24,7 +24,7 @@ void M5StationAXP192Component::dump_config() {
   LOG_I2C_DEVICE(this);
 }
 
-float M5StationAXP192Component::get_setup_priority() const { return setup_priority::DATA; }
+float M5StationAXP192Component::get_setup_priority() const { return setup_priority::HARDWARE; }
 
 void M5StationAXP192Component::update() {
   // Publish battery level if a sensor is configured
@@ -216,6 +216,17 @@ float M5StationAXP192Component::get_battery_level() {
   if (bat_percentage > 100.0f)
     return 100.0f;
   return bat_percentage;
+}
+
+void M5StationAXP192Component::set_backlight(bool on) {
+  // Mirror M5Station AXP192::SetLDO3 behaviour: bit 3 of reg 0x12
+  uint8_t reg = this->read_8_bit(0x12);
+  if (on) {
+    reg |= static_cast<uint8_t>(1 << 3);
+  } else {
+    reg &= static_cast<uint8_t>(~(1 << 3));
+  }
+  this->write_1_byte(0x12, reg);
 }
 
 void M5StationAXP192Component::set_bus_power_mode(uint8_t state) {

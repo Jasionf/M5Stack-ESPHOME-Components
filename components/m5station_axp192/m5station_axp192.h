@@ -16,6 +16,9 @@ class M5StationAXP192Component : public PollingComponent, public i2c::I2CDevice 
 
   void set_brightness(float brightness) { this->brightness_ = brightness; }
 
+  // Control LCD backlight (LDO3 enable)
+  void set_backlight(bool on);
+
   // ========== INTERNAL METHODS ==========
   void setup() override;
   void dump_config() override;
