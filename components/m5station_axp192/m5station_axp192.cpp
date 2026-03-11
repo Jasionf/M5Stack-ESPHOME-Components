@@ -130,20 +130,15 @@ void M5StationAXP192Component::begin() {
   ESP_LOGD(TAG, "axp: vbus limit off");
 
   // Disable DCDC2, enable EXTEN, LDO2, LDO3, DCDC1
+  // 0x4D = 0b01001101: bit6=EXTEN, bit3=LDO3, bit2=LDO2, bit0=DCDC1
   this->write_1_byte(0x12, this->read_8_bit(0x12) | 0x4D);
 
   // Set LDO2 & LDO3 voltages in register 0x28
-  // LDO2 (high 4 bits): LCD logic power - 3.0V
-  // LDO3 (low 4 bits): LCD backlight - 2.8V
-  {
-    uint16_t ldo2_mv = 3000;
-    uint16_t ldo3_mv = 2800;
-    uint8_t ldo2_value = (ldo2_mv > 3300) ? 15 : (ldo2_mv / 100) - 18;
-    uint8_t ldo3_value = (ldo3_mv > 3300) ? 15 : (ldo3_mv / 100) - 18;
-    this->write_1_byte(0x28, ((ldo2_value & 0x0F) << 4) | (ldo3_value & 0x0F));
-  }
-
-  ESP_LOGD(TAG, "axp: LDO2 (LCD logic) set to 3.00V, LDO3 (backlight) set to 2.80V");
+  // LDO2 (high 4 bits): LCD logic power - 3.0V  → value=(3000/100)-18=12=0x0C
+  // LDO3 (low  4 bits): LCD backlight      - 3.0V  → value=(3000/100)-18=12=0x0C
+  // Using 3.0V for both, same as M5Station factory default 0xCC
+  this->write_1_byte(0x28, 0xCC);
+  ESP_LOGD(TAG, "axp: LDO2 (LCD logic) = 3.0V, LDO3 (backlight) = 3.0V  [0x28=0xCC]");
 
   // Set ESP32 power voltage (DCDC1) to 3.35V
   {
@@ -204,13 +199,15 @@ void M5StationAXP192Component::screen_breath(int brightness_percent) {
   if (brightness_percent > 100)
     brightness_percent = 100;
 
-  int vol_mv = (brightness_percent * (3300 - 2400)) / 100 + 2400;
-  if (vol_mv < 2400)
-    vol_mv = 2400;
+  // Map 0-100% to 2500-3300mV (SetLcdVoltage requires >= 2500mV)
+  int vol_mv = (brightness_percent * (3300 - 2500)) / 100 + 2500;
+  if (vol_mv < 2500)
+    vol_mv = 2500;
   if (vol_mv > 3300)
     vol_mv = 3300;
 
-  uint8_t value = (vol_mv > 3300) ? 15 : (vol_mv / 100) - 18;
+  // value = (voltage/100) - 18, same as AXP192::SetLDOVoltage
+  uint8_t value = (uint8_t)((vol_mv / 100) - 18);
   // Preserve LDO2 (high 4 bits) while updating LDO3 (low 4 bits)
   this->write_1_byte(0x28, (this->read_8_bit(0x28) & 0xF0) | (value & 0x0F));
 }
@@ -238,11 +235,12 @@ float M5StationAXP192Component::get_battery_level() {
 
 void M5StationAXP192Component::set_backlight(bool on) {
   // Mirror M5Station AXP192::SetLDO3 behaviour: bit 3 of reg 0x12
+  // IMPORTANT: use explicit uint8_t mask to avoid sign-extension bug with ~(1<<3)
   uint8_t reg = this->read_8_bit(0x12);
   if (on) {
-    reg |= static_cast<uint8_t>(1 << 3);
+    reg |= (uint8_t) 0x08;   // set bit3
   } else {
-    reg &= static_cast<uint8_t>(~(1 << 3));
+    reg &= (uint8_t) 0xF7;   // clear bit3 (0xF7 = ~0x08 as uint8_t)
   }
   this->write_1_byte(0x12, reg);
 }
