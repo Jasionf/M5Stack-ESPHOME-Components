@@ -74,7 +74,55 @@ sensor:
     update_interval: 60s
     brightness: 0.8
 
+# 第一个 INA3221，地址 0x40
+  - platform: ina3221
+    id: ina1
+    i2c_id: i2c_bus
+    address: 0x40
+    update_interval: 1s
+    channel_1:
+      shunt_resistance: 0.01
+      bus_voltage:
+        name: "P.A1 Bus Voltage"
+      current:
+        name: "P.A1 Current"
+    channel_2:
+      shunt_resistance: 0.01
+      bus_voltage:
+        name: "P.A2 Bus Voltage"
+      current:
+        name: "P.A2 Current"
+    channel_3:
+      shunt_resistance: 0.01
+      bus_voltage:
+        name: "P.B1 Bus Voltage"
+      current:
+        name: "P.B1 Current"
 
+  # 第二个 INA3221，地址 0x41
+  - platform: ina3221
+    id: ina2
+    i2c_id: i2c_bus
+    address: 0x41
+    update_interval: 1s
+    channel_1:
+      shunt_resistance: 0.01
+      bus_voltage:
+        name: "P.B2 Bus Voltage"
+      current:
+        name: "P.B2 Current"
+    channel_2:
+      shunt_resistance: 0.01
+      bus_voltage:
+        name: "P.C1 Bus Voltage"
+      current:
+        name: "P.C1 Current"
+    channel_3:
+      shunt_resistance: 0.01
+      bus_voltage:
+        name: "P.C2 Bus Voltage"
+      current:
+        name: "P.C2 Current"
 
 binary_sensor:
   - platform: gpio
@@ -100,14 +148,21 @@ switch:
   - platform: template
     name: "LCD Backlight"
     id: lcd_backlight
-    optimistic: true
-    assumed_state: true
+    lambda: |-
+      // Assume backlight is ON by default; no feedback from hardware
+      return true;
+    restore_mode: ALWAYS_ON
     turn_on_action:
       - lambda: |-
           id(pmu).set_backlight(true);
     turn_off_action:
       - lambda: |-
           id(pmu).set_backlight(false);
+
+  # USB 5V power control (ESP32 GPIO12 -> USB)
+  - platform: gpio
+    name: "USB Power"
+    pin: GPIO12
 
     
 # Example minimal configuration entry
