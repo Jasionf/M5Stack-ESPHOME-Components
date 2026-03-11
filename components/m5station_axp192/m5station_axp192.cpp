@@ -26,6 +26,12 @@ void M5StationAXP192Component::setup() {
   // This ensures LDO3 is enabled regardless of switch restore state
   this->set_backlight(true);
   ESP_LOGD(TAG, "Forced backlight ON after setup");
+
+  // Debug: log key power registers related to LCD and backlight
+  uint8_t reg_12 = this->read_8_bit(0x12);
+  uint8_t reg_28 = this->read_8_bit(0x28);
+  ESP_LOGD(TAG, "AXP192 REG 0x12 (DCDC/LDO enable): 0x%02X", reg_12);
+  ESP_LOGD(TAG, "AXP192 REG 0x28 (LDO2/LDO3 voltage): 0x%02X", reg_28);
 }
 
 void M5StationAXP192Component::dump_config() {
