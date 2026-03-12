@@ -167,20 +167,21 @@ switch:
 # Example minimal configuration entry
 display:
   - platform: st7789v
+    # 自定义 135x240 ST7789，几何参数参考 TTGO_TDISPLAY_135X240
     model: CUSTOM
     width: 135
     height: 240
-    offset_height: 0
-    offset_width: 0
+    offset_height: 52
+    offset_width: 40
     cs_pin: GPIO5
     dc_pin: GPIO19
     reset_pin: GPIO15
     rotation: 90
     update_interval: 1s
     lambda: |-
-      // Fill screen with white so backlight效果明显
-      it.fill(Color::WHITE);
-      it.print(0, 0, id(font20), Color::BLACK, "Hello World!");
+      // 填充为黑色背景
+      it.fill(Color::BLACK);
+      it.print(0, 0, id(font20), Color::WHITE, "Hello World!");
 
 
 font:
