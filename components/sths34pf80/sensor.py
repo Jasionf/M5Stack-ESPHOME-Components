@@ -1,6 +1,6 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import i2c, sensor
+from esphome.components import i2c, sensor, binary_sensor
 from esphome.const import (
     CONF_ID,
     UNIT_CELSIUS,
@@ -15,6 +15,12 @@ DEPENDENCIES = ["i2c"]
 CONF_PRESENCE = "presence"
 CONF_MOTION = "motion"
 CONF_TEMPERATURE = "temperature"
+CONF_PRES_FLAG = "pres_flag"
+CONF_MOT_FLAG = "mot_flag"
+CONF_PRESENCE_THRESHOLD = "presence_threshold"
+CONF_MOTION_THRESHOLD = "motion_threshold"
+CONF_PRESENCE_HYSTERESIS = "presence_hysteresis"
+CONF_MOTION_HYSTERESIS = "motion_hysteresis"
 
 
 CONFIG_SCHEMA = (
@@ -37,6 +43,18 @@ CONFIG_SCHEMA = (
                 device_class=DEVICE_CLASS_TEMPERATURE,
                 state_class=STATE_CLASS_MEASUREMENT,
             ),
+            cv.Optional(CONF_PRES_FLAG): binary_sensor.binary_sensor_schema(
+                icon="mdi:account-check",
+            ),
+            cv.Optional(CONF_MOT_FLAG): binary_sensor.binary_sensor_schema(
+                icon="mdi:run-fast",
+            ),
+            # Hardware detection thresholds (0–32767); default matches Arduino example (0xC8 = 200)
+            cv.Optional(CONF_PRESENCE_THRESHOLD, default=200): cv.int_range(min=0, max=32767),
+            cv.Optional(CONF_MOTION_THRESHOLD, default=200): cv.int_range(min=0, max=32767),
+            # Hysteresis (0–255); default matches Arduino example (0x32 = 50)
+            cv.Optional(CONF_PRESENCE_HYSTERESIS, default=50): cv.int_range(min=0, max=255),
+            cv.Optional(CONF_MOTION_HYSTERESIS, default=50): cv.int_range(min=0, max=255),
         }
     )
     .extend(cv.polling_component_schema("1s"))
@@ -50,13 +68,22 @@ async def to_code(config):
     await i2c.register_i2c_device(var, config)
 
     if presence_conf := config.get(CONF_PRESENCE):
-        presence = await sensor.new_sensor(presence_conf)
-        cg.add(var.set_presence_sensor(presence))
+        cg.add(var.set_presence_sensor(await sensor.new_sensor(presence_conf)))
 
     if motion_conf := config.get(CONF_MOTION):
-        motion = await sensor.new_sensor(motion_conf)
-        cg.add(var.set_motion_sensor(motion))
+        cg.add(var.set_motion_sensor(await sensor.new_sensor(motion_conf)))
 
     if temp_conf := config.get(CONF_TEMPERATURE):
-        temp = await sensor.new_sensor(temp_conf)
-        cg.add(var.set_temperature_sensor(temp))
+        cg.add(var.set_temperature_sensor(await sensor.new_sensor(temp_conf)))
+
+    if pres_flag_conf := config.get(CONF_PRES_FLAG):
+        cg.add(var.set_pres_flag_sensor(await binary_sensor.new_binary_sensor(pres_flag_conf)))
+
+    if mot_flag_conf := config.get(CONF_MOT_FLAG):
+        cg.add(var.set_mot_flag_sensor(await binary_sensor.new_binary_sensor(mot_flag_conf)))
+
+    cg.add(var.set_presence_threshold(config[CONF_PRESENCE_THRESHOLD]))
+    cg.add(var.set_motion_threshold(config[CONF_MOTION_THRESHOLD]))
+    cg.add(var.set_presence_hysteresis(config[CONF_PRESENCE_HYSTERESIS]))
+    cg.add(var.set_motion_hysteresis(config[CONF_MOTION_HYSTERESIS]))
+

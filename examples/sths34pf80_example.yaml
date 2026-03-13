@@ -1,19 +1,32 @@
 esphome:
-  name: unit-tmos-pir
-  friendly_name: unit-tmos-pir
+  name: unit-tmos
+  friendly_name: Unit TMOS
 
 esp32:
-  board: esp32dev
+  board: esp32-s3-devkitc-1
   framework:
     type: esp-idf
 
+# Enable logging
 logger:
+
+# Enable Home Assistant API
 api:
+  encryption:
+    key: "S0W2C44rqzg6AcwgtmQ7KYnWnf+kY34mMPn3ESL9h8k="
+
 ota:
+  - platform: esphome
+    password: "7251c3c1477c19ec0aecae9b1953e9e7"
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Unit-Tmos Fallback Hotspot"
+    password: "047BAbG8PLK3"
 
 external_components:
   - source: github://Jasionf/echo-pyramid-components
@@ -21,15 +34,35 @@ external_components:
     refresh: 0s
 
 i2c:
-  sda: GPIO21
-  scl: GPIO22
+  sda: GPIO2
+  scl: GPIO1
+  scan: true
 
 sensor:
   - platform: sths34pf80
+    # Raw algorithm output values (same as presenceVal / motionVal in Arduino)
     presence:
       name: "TMOS Presence Value"
     motion:
       name: "TMOS Motion Value"
     temperature:
       name: "TMOS Object Temperature"
+
+    # Hardware-computed detection flags (same as status.pres_flag / status.mot_flag in Arduino)
+    pres_flag:
+      name: "TMOS Presence Detected"
+    mot_flag:
+      name: "TMOS Motion Detected"
+
+    # Detection thresholds – equivalent to setPresenceThreshold(0xC8) / setMotionThreshold(0xC8)
+    presence_threshold: 200   # 0xC8
+    motion_threshold: 200     # 0xC8
+
+    # Hysteresis – equivalent to setPresenceHysteresis(0x32) / setMotionHysteresis(0x32)
+    presence_hysteresis: 50   # 0x32
+    motion_hysteresis: 50     # 0x32
+
     update_interval: 1s
+
+captive_portal:
+    
