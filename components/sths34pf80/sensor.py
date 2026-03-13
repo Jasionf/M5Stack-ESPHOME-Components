@@ -11,6 +11,7 @@ from esphome.const import (
 from . import STHS34PF80Component
 
 DEPENDENCIES = ["i2c"]
+AUTO_LOAD = ["binary_sensor"]
 
 CONF_PRESENCE = "presence"
 CONF_MOTION = "motion"
