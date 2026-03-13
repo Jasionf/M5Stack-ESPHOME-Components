@@ -44,11 +44,17 @@ sensor:
       name: "TMOS Presence Detected"
     mot_flag:
       name: "TMOS Motion Detected"
-    presence_threshold: 200   # 0xC8
+    presence_threshold: 200   # 0xC8 – same as Arduino example
     motion_threshold: 200     # 0xC8
     presence_hysteresis: 50   # 0x32
     motion_hysteresis: 50     # 0x32
-    update_interval: 1s
+    # odr: internal sensor DSP sampling rate (1=0.25Hz … 8=30Hz, default 8)
+    # Must be HIGHER than 1/update_interval.  At odr=3 (1Hz) human breathing
+    # produces ~1-second thermal deltas that easily exceed threshold 200 →
+    # mot_flag is always ON.  At odr=8 (30Hz, same as Arduino example) each
+    # frame is 33 ms apart → still person generates near-zero deltas → works correctly.
+    odr: 8          # 30 Hz – matches Arduino setTmosODR(STHS34PF80_TMOS_ODR_AT_30Hz)
+    update_interval: 1s   # how often ESPHome reads & reports (independent of odr)
 
 captive_portal:
     

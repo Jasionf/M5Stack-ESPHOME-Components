@@ -22,6 +22,7 @@ CONF_PRESENCE_THRESHOLD = "presence_threshold"
 CONF_MOTION_THRESHOLD = "motion_threshold"
 CONF_PRESENCE_HYSTERESIS = "presence_hysteresis"
 CONF_MOTION_HYSTERESIS = "motion_hysteresis"
+CONF_ODR = "odr"
 
 
 CONFIG_SCHEMA = (
@@ -56,6 +57,10 @@ CONFIG_SCHEMA = (
             # Hysteresis (0–255); default matches Arduino example (0x32 = 50)
             cv.Optional(CONF_PRESENCE_HYSTERESIS, default=50): cv.int_range(min=0, max=255),
             cv.Optional(CONF_MOTION_HYSTERESIS, default=50): cv.int_range(min=0, max=255),
+            # Internal sensor ODR (1=0.25Hz 2=0.5Hz 3=1Hz 4=2Hz 5=4Hz 6=8Hz 7=15Hz 8=30Hz)
+            # MUST be >= 1/update_interval. Higher ODR = smaller per-frame thermal deltas
+            # = fewer false motion triggers. Default 8 (30Hz) matches Arduino example.
+            cv.Optional(CONF_ODR, default=8): cv.int_range(min=1, max=8),
         }
     )
     .extend(cv.polling_component_schema("1s"))
@@ -87,4 +92,5 @@ async def to_code(config):
     cg.add(var.set_motion_threshold(config[CONF_MOTION_THRESHOLD]))
     cg.add(var.set_presence_hysteresis(config[CONF_PRESENCE_HYSTERESIS]))
     cg.add(var.set_motion_hysteresis(config[CONF_MOTION_HYSTERESIS]))
+    cg.add(var.set_odr(config[CONF_ODR]))
 

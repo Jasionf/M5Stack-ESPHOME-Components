@@ -170,7 +170,9 @@ void STHS34PF80Component::setup() {
     write_byte_(0x11, 0x00);   // disable read mode
     write_byte_(REG_CTRL2, 0x00);  // back to main bank
     uint16_t readback = rb[0] | (static_cast<uint16_t>(rb1[0]) << 8);
-    ESP_LOGD(TAG, "Presence threshold readback: %u (expected %u)", readback, presence_threshold_);
+    ESP_LOGW(TAG, "Presence threshold readback: %u (expected %u)%s",
+             readback, presence_threshold_,
+             readback == presence_threshold_ ? " OK" : " *** MISMATCH – embedded bank write may have failed");
   }
 
   // 9. Reset algorithm state (clears stale presence/motion accumulators)
@@ -180,11 +182,25 @@ void STHS34PF80Component::setup() {
     return;
   }
 
-  // 10. Start ODR=1 Hz, BDU=1: CTRL1 = 0b0001_0011
-  //     bits[3:0]=ODR=3 (1 Hz), bit4=BDU=1
-  if (!write_byte_(REG_CTRL1, 0x13)) {
+  // 10. Start sensor. ODR and update_interval are independent:
+  //     - ODR controls the hardware DSP rate (how fast presence/motion algorithm runs)
+  //     - update_interval controls how often ESPHome reads the result
+  //
+  //     IMPORTANT: mot_flag is computed by comparing consecutive TMOTION frames.
+  //     At ODR=1 Hz, frames are 1 second apart → human breathing/micro-movement
+  //     easily produces thermal deltas > 200 → mot_flag is always ON.
+  //     At ODR=30 Hz, frames are 33 ms apart → deltas are tiny for a still person
+  //     and only spike on real motion. This matches the Arduino reference example.
+  //
+  //     BDU=1 (bit4), ODR=8=30 Hz (bits[3:0]) → CTRL1 = 0x18
+  uint8_t ctrl1_val = static_cast<uint8_t>(0x10 | (odr_ & 0x0F));
+  if (!write_byte_(REG_CTRL1, ctrl1_val)) {
     ESP_LOGW(TAG, "Failed to start ODR");
   }
+  ESP_LOGCONFIG(TAG, "  ODR register value: %u (~%s)", odr_,
+                odr_ == 1 ? "0.25Hz" : odr_ == 2 ? "0.5Hz" : odr_ == 3 ? "1Hz" :
+                odr_ == 4 ? "2Hz"   : odr_ == 5 ? "4Hz"   : odr_ == 6 ? "8Hz" :
+                odr_ == 7 ? "15Hz"  : odr_ == 8 ? "30Hz"  : "?");
 }
 
 // ── dump_config ──────────────────────────────────────────────────────────────
@@ -196,8 +212,9 @@ void STHS34PF80Component::dump_config() {
     ESP_LOGE(TAG, "  Communication with STHS34PF80 failed!");
     return;
   }
-  ESP_LOGCONFIG(TAG, "  Presence threshold: %u", presence_threshold_);
-  ESP_LOGCONFIG(TAG, "  Motion threshold:   %u", motion_threshold_);
+  ESP_LOGCONFIG(TAG, "  ODR:                %u (30Hz=8, 15Hz=7, 8Hz=6, 4Hz=5, 2Hz=4, 1Hz=3)", odr_);
+  ESP_LOGCONFIG(TAG, "  Presence threshold:  %u", presence_threshold_);
+  ESP_LOGCONFIG(TAG, "  Motion threshold:    %u", motion_threshold_);
   ESP_LOGCONFIG(TAG, "  Presence hysteresis: %u", presence_hysteresis_);
   ESP_LOGCONFIG(TAG, "  Motion hysteresis:   %u", motion_hysteresis_);
 }

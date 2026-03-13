@@ -24,6 +24,8 @@ class STHS34PF80Component : public PollingComponent, public i2c::I2CDevice {
   void set_motion_threshold(uint16_t v) { motion_threshold_ = v; }
   void set_presence_hysteresis(uint8_t v) { presence_hysteresis_ = v; }
   void set_motion_hysteresis(uint8_t v) { motion_hysteresis_ = v; }
+  // ODR register value: 1=0.25Hz, 2=0.5Hz, 3=1Hz, 4=2Hz, 5=4Hz, 6=8Hz, 7=15Hz, 8=30Hz
+  void set_odr(uint8_t v) { odr_ = v; }
 
  protected:
   bool read_bytes_(uint8_t reg, uint8_t *data, uint8_t len);
@@ -41,6 +43,7 @@ class STHS34PF80Component : public PollingComponent, public i2c::I2CDevice {
   uint16_t motion_threshold_{200};
   uint8_t presence_hysteresis_{50};   // default 0x32
   uint8_t motion_hysteresis_{50};
+  uint8_t odr_{8};  // default 30 Hz – matches Arduino example; keeps frame deltas small
 };
 
 }  // namespace sths34pf80
