@@ -40,28 +40,14 @@ i2c:
 
 sensor:
   - platform: sths34pf80
-    # Raw algorithm output values (same as presenceVal / motionVal in Arduino)
-    presence:
-      name: "TMOS Presence Value"
-    motion:
-      name: "TMOS Motion Value"
-    temperature:
-      name: "TMOS Object Temperature"
-
-    # Hardware-computed detection flags (same as status.pres_flag / status.mot_flag in Arduino)
     pres_flag:
       name: "TMOS Presence Detected"
     mot_flag:
       name: "TMOS Motion Detected"
-
-    # Detection thresholds – equivalent to setPresenceThreshold(0xC8) / setMotionThreshold(0xC8)
     presence_threshold: 200   # 0xC8
     motion_threshold: 200     # 0xC8
-
-    # Hysteresis – equivalent to setPresenceHysteresis(0x32) / setMotionHysteresis(0x32)
     presence_hysteresis: 50   # 0x32
     motion_hysteresis: 50     # 0x32
-
     update_interval: 1s
 
 captive_portal:

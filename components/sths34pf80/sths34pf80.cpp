@@ -45,20 +45,23 @@ bool STHS34PF80Component::write_byte_(uint8_t reg, uint8_t value) {
  * Write @len bytes to the embedded-function configuration register space.
  * Mirrors sths34pf80_func_cfg_write() in the ST driver.
  * Assumes the sensor is already in power-down (ODR=0).
+ *
+ * NOTE: We do NOT read-back CTRL2 before writing. Reading and re-OR-ing risks
+ * accidentally re-asserting the boot bit (bit7) if the OTP reload hasn't fully
+ * completed yet, which would silently wipe all threshold writes.
  */
 bool STHS34PF80Component::func_cfg_write_(uint8_t embedded_addr, const uint8_t *data, uint8_t len) {
-  // 1. Enable embedded-bank access: CTRL2 bit4 = func_cfg_access
-  uint8_t ctrl2 = 0;
-  if (!read_bytes_(REG_CTRL2, &ctrl2, 1)) return false;
-  if (!write_byte_(REG_CTRL2, ctrl2 | 0x10)) return false;
+  // 1. Enable embedded-bank access: set CTRL2 = 0x10 (func_cfg_access=1, all others 0)
+  //    We intentionally do NOT read-modify-write to avoid re-asserting the boot bit.
+  if (!write_byte_(REG_CTRL2, 0x10)) return false;
 
-  // 2. Enable write mode: PAGE_RW (addr 0x11 in embedded mode) bit6 = func_cfg_write
+  // 2. Enable write mode: PAGE_RW bit6 = func_cfg_write (= 0x40)
   if (!write_byte_(0x11, 0x40)) return false;
 
-  // 3. Set starting address
+  // 3. Set starting embedded-bank address (auto-increments on each FUNC_CFG_DATA write)
   if (!write_byte_(0x08, embedded_addr)) return false;  // FUNC_CFG_ADDR
 
-  // 4. Write each byte (address auto-increments)
+  // 4. Write each byte
   for (uint8_t i = 0; i < len; i++) {
     if (!write_byte_(0x09, data[i])) return false;  // FUNC_CFG_DATA
   }
@@ -66,8 +69,8 @@ bool STHS34PF80Component::func_cfg_write_(uint8_t embedded_addr, const uint8_t *
   // 5. Disable write mode
   if (!write_byte_(0x11, 0x00)) return false;
 
-  // 6. Return to main bank
-  if (!write_byte_(REG_CTRL2, ctrl2 & ~0x10)) return false;
+  // 6. Return to main register bank
+  if (!write_byte_(REG_CTRL2, 0x00)) return false;
 
   return true;
 }
@@ -95,11 +98,14 @@ void STHS34PF80Component::setup() {
     return;
   }
 
-  // 2. Boot OTP reset (CTRL2.boot = bit7)
+  // 2. Boot OTP reset (CTRL2.boot = bit7).
+  //    After asserting boot, wait 10 ms (spec is 2.5 ms; extra margin avoids
+  //    the race where func_cfg_write_ reads CTRL2 before boot bit self-clears,
+  //    which would inadvertently re-assert boot and wipe all threshold writes).
   if (!write_byte_(REG_CTRL2, 0x80)) {
     ESP_LOGW(TAG, "Failed to set boot bit");
   }
-  delay(3);  // wait ≥3 ms for OTP reload
+  delay(10);  // wait ≥10 ms for OTP reload and boot bit self-clear
 
   // 3. AVG_TRIM: avg_tmos=2 → 32 object averages (bits[2:0])
   //              avg_t=0   → 8 ambient averages   (bits[5:4])
@@ -118,7 +124,9 @@ void STHS34PF80Component::setup() {
     uint8_t buf[2] = {static_cast<uint8_t>(presence_threshold_ & 0xFF),
                       static_cast<uint8_t>(presence_threshold_ >> 8)};
     if (!func_cfg_write_(EMB_PRESENCE_THS, buf, 2)) {
-      ESP_LOGW(TAG, "Failed to set presence threshold");
+      ESP_LOGE(TAG, "Failed to set presence threshold");
+      this->mark_failed();
+      return;
     }
   }
 
@@ -127,23 +135,49 @@ void STHS34PF80Component::setup() {
     uint8_t buf[2] = {static_cast<uint8_t>(motion_threshold_ & 0xFF),
                       static_cast<uint8_t>(motion_threshold_ >> 8)};
     if (!func_cfg_write_(EMB_MOTION_THS, buf, 2)) {
-      ESP_LOGW(TAG, "Failed to set motion threshold");
+      ESP_LOGE(TAG, "Failed to set motion threshold");
+      this->mark_failed();
+      return;
     }
   }
 
   // 7. Motion hysteresis
   if (!func_cfg_write_(EMB_HYST_MOTION, &motion_hysteresis_, 1)) {
-    ESP_LOGW(TAG, "Failed to set motion hysteresis");
+    ESP_LOGE(TAG, "Failed to set motion hysteresis");
+    this->mark_failed();
+    return;
   }
 
   // 8. Presence hysteresis
   if (!func_cfg_write_(EMB_HYST_PRESENCE, &presence_hysteresis_, 1)) {
-    ESP_LOGW(TAG, "Failed to set presence hysteresis");
+    ESP_LOGE(TAG, "Failed to set presence hysteresis");
+    this->mark_failed();
+    return;
+  }
+
+  // Verify thresholds were actually written (read back via func_cfg_read equivalent)
+  {
+    // Re-enable embedded bank for read-back
+    write_byte_(REG_CTRL2, 0x10);  // embedded bank ON
+    write_byte_(0x11, 0x20);       // PAGE_RW: func_cfg_read=1 (bit5)
+    write_byte_(0x08, EMB_PRESENCE_THS);  // set address
+    uint8_t rb[2] = {0, 0};
+    read_bytes_(0x09, rb, 1);  // read low byte
+    // increment address
+    write_byte_(0x08, EMB_PRESENCE_THS + 1);
+    uint8_t rb1[1] = {0};
+    read_bytes_(0x09, rb1, 1);  // read high byte
+    write_byte_(0x11, 0x00);   // disable read mode
+    write_byte_(REG_CTRL2, 0x00);  // back to main bank
+    uint16_t readback = rb[0] | (static_cast<uint16_t>(rb1[0]) << 8);
+    ESP_LOGD(TAG, "Presence threshold readback: %u (expected %u)", readback, presence_threshold_);
   }
 
   // 9. Reset algorithm state (clears stale presence/motion accumulators)
   if (!algo_reset_()) {
-    ESP_LOGW(TAG, "algo_reset failed");
+    ESP_LOGE(TAG, "algo_reset failed");
+    this->mark_failed();
+    return;
   }
 
   // 10. Start ODR=1 Hz, BDU=1: CTRL1 = 0b0001_0011
