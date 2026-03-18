@@ -10,3 +10,8 @@ UnitACMeasureComponent = unit_acmeasure_ns.class_(
     cg.PollingComponent,
     i2c.I2CDevice,
 )
+
+# Expose CONFIG_SCHEMA and to_code so this component can be used
+# directly as a top-level YAML block (unit_acmeasure:).
+from .sensor import CONFIG_SCHEMA, to_code
+
