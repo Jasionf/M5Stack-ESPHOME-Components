@@ -8,15 +8,14 @@ A friendly bundle of custom ESPHome bits that powers the Echo Pyramid on ESP32�
 
 | Area | Component | Path | Bus/Address | Quick Note |
 |---|---|---|---|---|
-| RGB Strips | pyramidrgb (parent + outputs) | `components/pyramidrgb` | I2C @ 0x1A | Drives 2 strips × 2 groups × 7 LEDs (per-LED writes) |
-| Touch | pyramidtouch | `components/pyramidtouch` | I2C @ 0x1A | Touch1–4 + optional swipe events (left/right up/down) |
+| RGB Strips | m5stack_pyramidrgb (parent + outputs) | components/m5stack_pyramidrgb | I2C @ 0x1A | Drives 2 strips × 2 groups × 7 LEDs (per-LED writes) |
+| Touch | m5stack_pyramidtouch | components/m5stack_pyramidtouch | I2C @ 0x1A | Touch1–4 + optional swipe events (left/right up/down) |
 | LED Driver | lp5562 | `components/lp5562` | I2C @ 0x30 | TI RGBW driver with PWM/current + engine map |
 | Audio Amp | aw87559 | `components/aw87559` | I2C @ 0x5B | Minimal init, logs setup status |
 | Clock Gen | si5351 | `components/si5351` | I2C @ 0x60 | Sets up outputs with preset params |
 
 Tips:
-- Two folders exist for PyramidRGB (`PyramidRGB/` and `pyramidrgb/`); use the lowercase one to avoid confusion.
-- Example dashboards live in `examples/`.
+- Example dashboards live in examples/.
 
 ---
 
@@ -29,7 +28,7 @@ Tips:
 ```yaml
 external_components:
   - source: github://Jasionf/echo-pyramid-components@main
-    components: [aw87559, si5351, lp5562, pyramidrgb, pyramidtouch]
+    components: [aw87559, si5351, lp5562, m5stack_pyramidrgb, m5stack_pyramidtouch]
     refresh: 0s
 
 i2c:
@@ -64,7 +63,7 @@ Parent component (`PyramidRGBComponent`) controls an STM32 at 0x1A. Child output
 Add parent(s):
 
 ```yaml
-pyramidrgb:
+m5stack_pyramidrgb:
   - id: pyramid_rgb1
     i2c_id: bsp_bus
     strip: 1
@@ -80,19 +79,19 @@ Map outputs → lights:
 
 ```yaml
 output:
-  - platform: pyramidrgb
+  - platform: m5stack_pyramidrgb
     id: rgb1_ch0_red
-    pyramidrgb_id: pyramid_rgb1
+    m5stack_pyramidrgb_id: pyramid_rgb1
     channel: 0
     color: red
-  - platform: pyramidrgb
+  - platform: m5stack_pyramidrgb
     id: rgb1_ch0_green
-    pyramidrgb_id: pyramid_rgb1
+    m5stack_pyramidrgb_id: pyramid_rgb1
     channel: 0
     color: green
-  - platform: pyramidrgb
+  - platform: m5stack_pyramidrgb
     id: rgb1_ch0_blue
-    pyramidrgb_id: pyramid_rgb1
+    m5stack_pyramidrgb_id: pyramid_rgb1
     channel: 0
     color: blue
 
@@ -136,7 +135,7 @@ Minimal config:
 
 ```yaml
 sensor:
-  - platform: pyramidtouch
+  - platform: m5stack_pyramidtouch
     i2c_id: bsp_bus
     address: 0x1A
     update_interval: 50ms
