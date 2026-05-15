@@ -68,9 +68,13 @@ void M5UnitEncoder::set_led_channel(uint8_t led_index, LedColorChannel channel, 
   this->write_led_color_(led_index);
 }
 
+// Firmware I2C index mapping: 0=LED0, 1=both, 2=LED1
+static const uint8_t LED_I2C_INDEX[2] = {0, 2};
+
 void M5UnitEncoder::write_led_color_(uint8_t index) {
+  uint8_t i2c_index = LED_I2C_INDEX[index];
   uint8_t data[4];
-  data[0] = index;
+  data[0] = i2c_index;
   data[1] = this->led_color_[index][LED_RED];
   data[2] = this->led_color_[index][LED_GREEN];
   data[3] = this->led_color_[index][LED_BLUE];
